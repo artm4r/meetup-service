@@ -1,30 +1,44 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Home from "../views/Home.vue";
+import Meetups from "../views/Meetups";
 
 Vue.use(VueRouter);
+
+export function scrollBehavior(to, from, savedPosition) {
+  const hasSavedPosition = {
+    to: to.matched.some(({ meta }) => meta && meta.saveScrollPosition),
+    from: from.matched.some(({ meta }) => meta && meta.saveScrollPosition),
+  };
+
+  if (to.hash) {
+    return { selector: to.hash };
+  } else if (hasSavedPosition.to && hasSavedPosition.from) {
+    return false;
+  } else {
+    return savedPosition || { x: 0, y: 0 };
+  }
+}
 
 const routes = [
   {
     path: "/",
-    name: "Главная",
-    component: Home
+    name: "home",
+    component: Meetups,
   },
   {
     path: "/meetups",
-    name: "Список митапов",
-    component: () =>
-      import(/* webpackChunkName: "meetups" */ "../views/Meetups")
+    name: "meetups",
+    component: Meetups,
   },
   {
-    path: "/meetups/:id",
-    name: "Митап",
+    path: "/meetups/:id(\\d+)",
+    name: "meetup",
     component: () =>
       import(/* webpackChunkName: "meetup-page" */ "../views/MeetupPage"),
     children: [
       {
         path: "description",
-        name: "Описание митапа",
+        name: "meetup-description",
         component: () =>
           import(
             /* webpackChunkName: "meetup-description" */ "../components/MeetupDescription"
@@ -32,7 +46,7 @@ const routes = [
       },
       {
         path: "agenda",
-        name: "Программа митапа",
+        name: "meetup-agenda",
         component: () =>
           import(
             /* webpackChunkName: "meetup-agenda" */ "../components/MeetupAgenda"
@@ -40,7 +54,7 @@ const routes = [
       },
       {
         path: "edit",
-        name: "Редактировать митап",
+        name: "edit-meetup",
         component: () =>
           import(/* webpackChunkName: "meetup-edit" */ "../views/MeetupEdit")
       }
@@ -48,24 +62,33 @@ const routes = [
   },
   {
     path: "/meetups/create",
-    name: "Создание митапа",
+    name: "create-meetup",
     component: () =>
       import(/* webpackChunkName: "meetup-create" */ "../views/MeetupCreate")
   },
   {
     path: "/login",
-    name: "Список митапов",
+    name: "login",
     component: () => import(/* webpackChunkName: "login" */ "../views/Login")
   },
   {
     path: "/register",
-    name: "Список митапов",
+    name: "register",
     component: () =>
       import(/* webpackChunkName: "registration" */ "../views/Registration")
+  },
+  {
+    path: "/*",
+    name: "404",
+    component: () =>
+      import(/* webpackChunkName: "registration" */ "../views/Page404")
   }
 ];
 
 const router = new VueRouter({
+  mode: "history",
+  base: process.env.BASE_URL,
+  scrollBehavior,
   routes
 });
 
